@@ -2,12 +2,15 @@ mod arguments;
 mod database;
 mod db_storage;
 mod errors;
+mod gmail_smtp;
 mod html_extractor;
 mod json_extractor;
 mod product_extractor;
 mod structures;
 mod temp_file_manager;
+mod validate_deals;
 
+use crate::validate_deals::review_product_promotions;
 use arguments::Args;
 use errors::AppError;
 use rusqlite::Connection;
@@ -49,6 +52,22 @@ fn main() -> Result<(), AppError> {
     let db_path = db_storage::parse_db_path(&args.db_path)?;
     let conn: Connection = database::create_database(&db_path)?;
     database::insert_product(&conn, &product)?;
+
+    // Review product promotions and send email if deals are active.
+    let review_results = review_product_promotions(&product);
+
+    // Send email with product review results if any deals are active.
+    if !review_results.is_empty() {
+        for result in review_results {
+            // Send email if the deals are active.
+            gmail_smtp::send_email(
+                "israel.alberto.rv@gmail.com",
+                "israel.alberto.rv@gmail.com",
+                "Liverpool | Bose QC Ultra | Promotions",
+                &format!("{}\n\nVisit the web page: {}", result, args.url),
+            )?;
+        }
+    }
 
     Ok(())
 }

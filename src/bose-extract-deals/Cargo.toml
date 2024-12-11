@@ -12,4 +12,5 @@ chrono = { version = "0.4.39", features = ["serde"] }
 rusqlite = "0.32.1"
 tempfile = "3.14.0"
 dirs = "5.0.1"
-clap = { version = "4.3", features = ["derive"] }
+clap = { version = "4.5.23", features = ["derive"] }
+lettre = "0.11.11"
